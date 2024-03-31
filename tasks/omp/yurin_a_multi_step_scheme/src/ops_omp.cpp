@@ -62,66 +62,85 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     std::vector<std::vector<double>> tempAns(4);
     tempAns[0] = res[i];
     tempAns[0].resize(tempSize + 1);
-
-    for (int16_t j = 1; j < 4; ++j) {
-      tempAns[j].resize(tempSize + 1);
-      if (j != 3) {
-        tempAns[j][0] = tempAns[0][0] + h / 2;
-      } else {
-        tempAns[j][0] = tempAns[0][0] + h;
-      }
-    }
-
-    for (uint32_t j = 0; j < 4; ++j) {
-// #pragma omp parallel for
-      for (int64_t k = 1; k < tempSize / 2 + 1; ++k) {
-        if (k != tempSize / 2) {
-          tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
+    std::vector<double> temp;
+    std::vector<double> deltaSum;
+#pragma omp parallel
+    {
+#pragma omp for
+      for (int16_t j = 1; j < 4; ++j) {
+        tempAns[j].resize(tempSize + 1);
+        if (j != 3) {
+          tempAns[j][0] = tempAns[0][0] + h / 2;
         } else {
-          for (uint32_t l = 1; l < equation.size(); ++l) {
-            double summand{};
-            if (l < equation.size() - 2) {
-              summand = (-1) * equation[l] * tempAns[j][tempSize / 2 - l + 1];
-            } else if (l == equation.size() - 2) {
-              summand = equation[l] * tempAns[j][0];
+          tempAns[j][0] = tempAns[0][0] + h;
+        }
+      }
+
+#pragma omp barrier
+#pragma omp master
+      {
+        for (uint32_t j = 0; j < 4; ++j) {
+          for (int64_t k = 1; k < tempSize / 2 + 1; ++k) {
+            if (k != tempSize / 2) {
+              tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
             } else {
-              summand = equation[l];
+              for (uint32_t l = 1; l < equation.size(); ++l) {
+                double summand{};
+                if (l < equation.size() - 2) {
+                  summand = (-1) * equation[l] * tempAns[j][tempSize / 2 - l + 1];
+                } else if (l == equation.size() - 2) {
+                  summand = equation[l] * tempAns[j][0];
+                } else {
+                  summand = equation[l];
+                }
+                tempAns[j][k + tempSize / 2] += summand;
+              }
+              tempAns[j][k + tempSize / 2] *= h / equation[0];
             }
-            tempAns[j][k + tempSize / 2] += summand;
+
+            if (j < 2) {
+              tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2] / 2;
+            } else if (j < 3) {
+              tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2];
+            }
           }
-          tempAns[j][k + tempSize / 2] *= h / equation[0];
         }
-
-        if (j < 2) {
-          tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2] / 2;
-        } else if (j < 3) {
-          tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2];
-        }
+        deltaSum.resize(equation.size() - 3);
       }
-    }
 
-    std::vector<double> deltaSum(equation.size() - 3);
-
-// #pragma omp parallel for
-    for (int64_t j = 1; j < tempSize / 2 + 1; ++j) {
-      for (int k = 0; k < 4; ++k) {
-        if (k != 1 and k != 2) {
-          deltaSum[j - 1] += tempAns[k][j + tempSize / 2];
-        } else {
-          deltaSum[j - 1] += 2 * tempAns[k][j + tempSize / 2];
+#pragma omp barrier
+#pragma omp for
+      for (int64_t j = 1; j < tempSize / 2 + 1; ++j) {
+        for (int k = 0; k < 4; ++k) {
+          if (k != 1 and k != 2) {
+            deltaSum[j - 1] += tempAns[k][j + tempSize / 2];
+          } else {
+            deltaSum[j - 1] += 2 * tempAns[k][j + tempSize / 2];
+          }
         }
+        deltaSum[j - 1] /= 6;
       }
-      deltaSum[j - 1] /= 6;
+
+#pragma omp barrier
+#pragma omp master
+      {
+        temp.resize(res[i].size());
+        temp[0] = res[i][0] + h;
+      }
+
+#pragma omp barrier
+#pragma omp for
+      for (int32_t j = 1; j < resSize; ++j) {
+        temp[j] = res[i][j] + deltaSum[j - 1];
+      }
+
+#pragma omp barrier
+#pragma omp master
+      {
+        res.push_back(temp);
+      }
+#pragma omp barrier
     }
-
-    std::vector<double> temp(res[i].size());
-    temp[0] = res[i][0] + h;
-
-    for (int32_t j = 1; j < resSize; ++j) {
-      temp[j] = res[i][j] + deltaSum[j - 1];
-    }
-
-    res.push_back(temp);
   }
 }
 
@@ -140,7 +159,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
 
-// #pragma omp parallel for
+#pragma omp parallel for
     for (int32_t j = 0; j < resSize - 1; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -178,9 +197,8 @@ void MultiStepSchemeOMP::AdamsMethod() {
   int16_t ind = _numberOfSteps;
 
   for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
-#pragma omp parallel shared(tempAns, res, equation, _numberOfSteps, _coefficients, offset, h, ind)
+#pragma omp parallel
     {
-#pragma omp barrier
 #pragma omp master
       {
         std::vector<double> newStrInAns;
@@ -240,5 +258,6 @@ void MultiStepSchemeOMP::AdamsMethod() {
         tempAns.erase(tempAns.begin());
       }
     }
+#pragma omp barrier
   }
 }
