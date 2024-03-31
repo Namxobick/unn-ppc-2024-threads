@@ -219,7 +219,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
     }
 
-// #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
       for (uint32_t k = 0; k < _numberOfSteps - 1; ++k) {
         auto diminutive = tempAns[ind - k][j * offset + 4 + k];
