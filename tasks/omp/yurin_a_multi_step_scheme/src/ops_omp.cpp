@@ -63,7 +63,6 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     tempAns[0] = res[i];
     tempAns[0].resize(tempSize + 1);
 
-#pragma omp parallel for num_threads(3)
     for (int16_t j = 1; j < 4; ++j) {
       tempAns[j].resize(tempSize + 1);
       if (j != 3) {
@@ -186,7 +185,6 @@ void MultiStepSchemeOMP::AdamsMethod() {
 
     for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
       double tempDelta{};
-#pragma omp parallel for reduction(+ : tempDelta)
       for (int16_t k = 0; k < _numberOfSteps; ++k) {
         tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
       }
