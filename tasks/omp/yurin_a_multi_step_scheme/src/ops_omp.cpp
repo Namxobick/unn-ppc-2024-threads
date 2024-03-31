@@ -182,7 +182,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     newStrInAns.reserve(res[0].size());
     newStrInAns.push_back(tempAns[ind - 1][0] + h);
 
-// #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
       double tempDelta{};
 #pragma omp parallel for reduction(+ : tempDelta)
@@ -194,6 +194,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
       newStrInAns.push_back(tempAns[ind][j * offset + 1]);
     }
+    
     res.push_back(newStrInAns);
     newStrInAns.clear();
 
