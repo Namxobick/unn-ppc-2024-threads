@@ -63,7 +63,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     tempAns[0] = res[i];
     tempAns[0].resize(tempSize + 1);
 
-#pragma omp parallel for num_threads(3)
+#pragma omp parallel
     for (int16_t j = 1; j < 4; ++j) {
       tempAns[j].resize(tempSize + 1);
       if (j != 3) {
@@ -118,7 +118,6 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     std::vector<double> temp(res[i].size());
     temp[0] = res[i][0] + h;
 
-#pragma omp parallel for
     for (int32_t j = 1; j < resSize; ++j) {
       temp[j] = res[i][j] + deltaSum[j - 1];
     }
