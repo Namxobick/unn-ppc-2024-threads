@@ -224,7 +224,6 @@ void MultiStepSchemeOMP::AdamsMethod() {
 
 #pragma omp parallel for
     for (int16_t j = 0; j < resSize - 1; ++j) {
-#pragma omp parallel for num_threads(3)
       for (int16_t k = 0; k < _numberOfSteps - 1; ++k) {
         auto diminutive = tempAns[ind - k][j * offset + 4 + k];
         auto deductible = tempAns[ind - 1 - k][j * offset + 4 + k];
