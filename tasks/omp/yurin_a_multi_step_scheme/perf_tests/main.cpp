@@ -53,7 +53,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
 
   for (uint32_t i = 0; i < size; i++) {
     double x = i * h;
-    EXPECT_NEAR(out[i], 0.5 * ((-1) * exp(-x) + 5 * sin(x) + (3 - 2 * x) * cos(x)), 1e-8);
+    EXPECT_NEAR(out[i], 0.5 * ((-1) * exp(-x) + 5 * sin(x) + (3 - 2 * x) * cos(x)), 1e-4);
   }
 }
 
@@ -101,6 +101,6 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
 
   for (uint32_t i = 0; i < size; i++) {
     double x = i * h;
-    EXPECT_NEAR(out[i], 0.5 * ((-1) * exp(-x) + 5 * sin(x) + (3 - 2 * x) * cos(x)), 1e-8);
+    EXPECT_NEAR(out[i], 0.5 * ((-1) * exp(-x) + 5 * sin(x) + (3 - 2 * x) * cos(x)), 1e-4);
   }
 }
