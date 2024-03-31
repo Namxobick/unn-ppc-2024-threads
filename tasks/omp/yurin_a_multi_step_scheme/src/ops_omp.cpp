@@ -61,7 +61,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     tempAns[0] = res[i];
     tempAns[0].resize(tempSize + 1);
 
-    #pragma omp parallel for num_threads(3)
+#pragma omp parallel for num_threads(3)
     for (uint32_t j = 1; j < 4; ++j) {
       tempAns[j].resize(tempSize + 1);
       if (j != 3) {
@@ -72,7 +72,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     }
 
     for (uint32_t j = 0; j < 4; ++j) {
-      #pragma omp parallel for
+#pragma omp parallel for
       for (uint32_t k = 1; k < tempSize / 2 + 1; ++k) {
         if (k != tempSize / 2) {
           tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
@@ -101,7 +101,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
 
     std::vector<double> deltaSum(equation.size() - 3);
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t j = 1; j < tempSize / 2 + 1; ++j) {
       for (int k = 0; k < 4; ++k) {
         if (k != 1 and k != 2) {
@@ -116,7 +116,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     std::vector<double> temp(res[i].size());
     temp[0] = res[i][0] + h;
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t j = 1; j < res[i].size(); ++j) {
       temp[j] = res[i][j] + deltaSum[j - 1];
     }
@@ -139,7 +139,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
 
-    #pragma omp parallel for
+// #pragma omp parallel for
     for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
       for (uint32_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -182,10 +182,10 @@ void MultiStepSchemeOMP::AdamsMethod() {
     newStrInAns.reserve(res[0].size());
     newStrInAns.push_back(tempAns[ind - 1][0] + h);
 
-    #pragma omp parallel for
+// #pragma omp parallel for
     for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
       double tempDelta{};
-      #pragma omp parallel for reduction(+ : tempDelta)
+// #pragma omp parallel for reduction(+ : tempDelta)
       for (uint32_t k = 0; k < _numberOfSteps; ++k) {
         tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
       }
@@ -197,7 +197,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     res.push_back(newStrInAns);
     newStrInAns.clear();
 
-    #pragma omp parallel for
+// #pragma omp parallel for
     for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
       if (j != res[0].size() - 2) {
         tempAns[ind][j * offset + 3] = res[i][j + 2];
@@ -219,6 +219,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
     }
 
+// #pragma omp parallel for
     for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
       for (uint32_t k = 0; k < _numberOfSteps - 1; ++k) {
         auto diminutive = tempAns[ind - k][j * offset + 4 + k];
@@ -226,6 +227,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
         tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
       }
     }
+
     tempAns.erase(tempAns.begin());
   }
 }
