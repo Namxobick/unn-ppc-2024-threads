@@ -102,7 +102,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
 
     std::vector<double> deltaSum(equation.size() - 3);
 
-#pragma omp parallel for
+// #pragma omp parallel for
     for (int64_t j = 1; j < tempSize / 2 + 1; ++j) {
       for (int k = 0; k < 4; ++k) {
         if (k != 1 and k != 2) {
@@ -140,7 +140,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
 
-#pragma omp parallel for
+ #pragma omp parallel for
     for (int32_t j = 0; j < resSize - 1; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -198,7 +198,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     res.push_back(newStrInAns);
     newStrInAns.clear();
 
-// #pragma omp parallel for
+ #pragma omp parallel for
     for (int32_t j = 0; j < resSize - 1; ++j) {
       if (j != resSize - 2) {
         tempAns[ind][j * offset + 3] = res[i][j + 2];
@@ -220,7 +220,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
     }
 
-// #pragma omp parallel for
+ #pragma omp parallel for
     for (int16_t j = 0; j < resSize - 1; ++j) {
       for (int16_t k = 0; k < _numberOfSteps - 1; ++k) {
         auto diminutive = tempAns[ind - k][j * offset + 4 + k];
