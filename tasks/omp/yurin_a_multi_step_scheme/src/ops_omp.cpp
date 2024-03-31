@@ -180,6 +180,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
   for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
 #pragma omp parallel shared(tempAns, res, equation, _numberOfSteps, _coefficients, offset, h, ind)
     {
+#pragma omp barrier
 #pragma omp master
       {
         std::vector<double> newStrInAns;
@@ -201,6 +202,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
 
         res.push_back(newStrInAns);
       }
+#pragma omp barrier
 #pragma omp for
       for (int32_t j = 0; j < resSize - 1; ++j) {
         if (j != resSize - 2) {
@@ -222,7 +224,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
           tempAns[ind][j * offset + 4] = tempAns[ind][j * offset + 3] * h;
         }
       }
-
+#pragma omp barrier
 #pragma omp for
       for (int16_t j = 0; j < resSize - 1; ++j) {
         for (int16_t k = 0; k < _numberOfSteps - 1; ++k) {
