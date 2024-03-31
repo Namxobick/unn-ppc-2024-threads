@@ -5,7 +5,8 @@ name: Collect performance statistic
 on:
   schedule:
     - cron: '0 12 */2 * *'
-
+  workflow_dispatch:
+  
 jobs:
   ubuntu-gcc-build:
     runs-on: ubuntu-latest
