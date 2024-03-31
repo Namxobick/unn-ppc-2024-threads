@@ -180,9 +180,9 @@ void MultiStepSchemeOMP::AdamsMethod() {
   for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
 #pragma omp parallel
     {
-      std::vector<double> newStrInAns;
 #pragma omp master
       {
+        std::vector<double> newStrInAns;
         tempAns.emplace_back((equation.size() - 3) * offset + 1);
         tempAns[ind][0] = tempAns[ind - 1][0] + h;
 
@@ -232,7 +232,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
           tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
         }
       }
-#pragma omp single
+#pragma omp master
       { tempAns.erase(tempAns.begin()); }
     }
   }
