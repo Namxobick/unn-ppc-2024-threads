@@ -19,7 +19,7 @@ class MultiStepSchemeOMP : public ppc::core::Task {
   void AdamsMethod();
 
   const std::vector<double> _coefficients = {1, 0.5, 0.42, 0.38};
-  const uint32_t _numberOfSteps = 4;
+  const int16_t _numberOfSteps = 4;
 
   std::vector<double> equation{};
   std::vector<double> boundaryConditions{};
