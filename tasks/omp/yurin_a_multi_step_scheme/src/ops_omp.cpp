@@ -232,6 +232,8 @@ void MultiStepSchemeOMP::AdamsMethod() {
           tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
         }
       }
+
+#pragma omp barrier
 #pragma omp master
       { tempAns.erase(tempAns.begin()); }
     }
