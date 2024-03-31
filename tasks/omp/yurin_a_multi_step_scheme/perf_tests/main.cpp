@@ -1,7 +1,8 @@
 // Copyright 2024 Yurin Andrey
+#include <omp.h>
+
 #include <cmath>
 #include <vector>
-#include <omp.h>
 
 #include "core/perf/include/perf.hpp"
 #include "gtest/gtest.h"

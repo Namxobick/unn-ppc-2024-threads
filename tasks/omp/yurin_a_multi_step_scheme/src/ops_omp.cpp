@@ -1,9 +1,9 @@
 // Copyright 2024 Yurin Andrey
+#include "omp/yurin_a_multi_step_scheme/include/ops_omp.hpp"
+
 #include <omp.h>
 
 #include <thread>
-
-#include "omp/yurin_a_multi_step_scheme/include/ops_omp.hpp"
 
 using namespace std::chrono_literals;
 
