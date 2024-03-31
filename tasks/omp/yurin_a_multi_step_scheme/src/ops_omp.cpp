@@ -182,6 +182,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     {
 #pragma omp master
       {
+        std::cout << "Master " << omp_get_thread_num() << std::endl;
         std::vector<double> newStrInAns;
         tempAns.emplace_back((equation.size() - 3) * offset + 1);
         tempAns[ind][0] = tempAns[ind - 1][0] + h;
@@ -204,6 +205,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
 #pragma omp for
       for (int32_t j = 0; j < resSize - 1; ++j) {
+        std::cout << "First for " << omp_get_thread_num() << std::endl;
         if (j != resSize - 2) {
           tempAns[ind][j * offset + 3] = res[i][j + 2];
           tempAns[ind][j * offset + 4] = res[i][j + 2] * h;
@@ -227,6 +229,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
 #pragma omp for
       for (int16_t j = 0; j < resSize - 1; ++j) {
         for (int16_t k = 0; k < _numberOfSteps - 1; ++k) {
+          std::cout << "Second for " << omp_get_thread_num() << std::endl;
           auto diminutive = tempAns[ind - k][j * offset + 4 + k];
           auto deductible = tempAns[ind - 1 - k][j * offset + 4 + k];
           tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
@@ -235,7 +238,10 @@ void MultiStepSchemeOMP::AdamsMethod() {
 
 #pragma omp barrier
 #pragma omp master
-      { tempAns.erase(tempAns.begin()); }
+      {
+        std::cout << "Master " << omp_get_thread_num() << std::endl;
+        tempAns.erase(tempAns.begin());
+      }
     }
   }
 }
