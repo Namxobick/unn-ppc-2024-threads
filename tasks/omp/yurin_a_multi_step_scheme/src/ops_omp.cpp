@@ -177,32 +177,31 @@ void MultiStepSchemeOMP::AdamsMethod() {
 
   int16_t ind = _numberOfSteps;
 
+  for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
 #pragma omp parallel
-  {
-#pragma omp single
-    for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
-      tempAns.emplace_back((equation.size() - 3) * offset + 1);
-      tempAns[ind][0] = tempAns[ind - 1][0] + h;
-
+    {
       std::vector<double> newStrInAns;
-      newStrInAns.reserve(res[0].size());
-      newStrInAns.push_back(tempAns[ind - 1][0] + h);
+#pragma omp master
+      {
+        tempAns.emplace_back((equation.size() - 3) * offset + 1);
+        tempAns[ind][0] = tempAns[ind - 1][0] + h;
 
-      for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
-        double tempDelta{};
-#pragma omp for reduction(+ : tempDelta)
-        for (int16_t k = 0; k < _numberOfSteps; ++k) {
-          tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
+        newStrInAns.reserve(res[0].size());
+        newStrInAns.push_back(tempAns[ind - 1][0] + h);
+        for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
+          double tempDelta{};
+          for (int16_t k = 0; k < _numberOfSteps; ++k) {
+            tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
+          }
+
+          tempAns[ind - 1][j * offset + 2] = tempDelta;
+          tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
+          newStrInAns.push_back(tempAns[ind][j * offset + 1]);
         }
 
-        tempAns[ind - 1][j * offset + 2] = tempDelta;
-        tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
-        newStrInAns.push_back(tempAns[ind][j * offset + 1]);
+        res.push_back(newStrInAns);
+        newStrInAns.clear();
       }
-
-      res.push_back(newStrInAns);
-      newStrInAns.clear();
-
 #pragma omp for
       for (int32_t j = 0; j < resSize - 1; ++j) {
         if (j != resSize - 2) {
@@ -233,8 +232,8 @@ void MultiStepSchemeOMP::AdamsMethod() {
           tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
         }
       }
-
-      tempAns.erase(tempAns.begin());
+#pragma omp single
+      { tempAns.erase(tempAns.begin()); }
     }
   }
 }
