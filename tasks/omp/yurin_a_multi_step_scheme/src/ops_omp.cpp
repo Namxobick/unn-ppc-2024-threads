@@ -140,7 +140,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
 
- #pragma omp parallel for
+// #pragma omp parallel for
     for (int32_t j = 0; j < resSize - 1; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -174,61 +174,67 @@ void MultiStepSchemeOMP::AdamsMethod() {
     }
     stepCount++;
   }
+
   int16_t ind = _numberOfSteps;
-  for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
-    tempAns.emplace_back((equation.size() - 3) * offset + 1);
-    tempAns[ind][0] = tempAns[ind - 1][0] + h;
 
-    std::vector<double> newStrInAns;
-    newStrInAns.reserve(res[0].size());
-    newStrInAns.push_back(tempAns[ind - 1][0] + h);
+#pragma omp parallel
+  {
+#pragma omp single
+    for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
+      tempAns.emplace_back((equation.size() - 3) * offset + 1);
+      tempAns[ind][0] = tempAns[ind - 1][0] + h;
 
-    for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
-      double tempDelta{};
-// parallel for reduction(+ : tempDelta)
-      for (int16_t k = 0; k < _numberOfSteps; ++k) {
-        tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
-      }
+      std::vector<double> newStrInAns;
+      newStrInAns.reserve(res[0].size());
+      newStrInAns.push_back(tempAns[ind - 1][0] + h);
 
-      tempAns[ind - 1][j * offset + 2] = tempDelta;
-      tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
-      newStrInAns.push_back(tempAns[ind][j * offset + 1]);
-    }
-
-    res.push_back(newStrInAns);
-    newStrInAns.clear();
-
- #pragma omp parallel for
-    for (int32_t j = 0; j < resSize - 1; ++j) {
-      if (j != resSize - 2) {
-        tempAns[ind][j * offset + 3] = res[i][j + 2];
-        tempAns[ind][j * offset + 4] = res[i][j + 2] * h;
-      } else {
-        for (uint32_t l = 1; l < equation.size(); ++l) {
-          double summand{};
-          if (l < equation.size() - 2) {
-            summand = (-1) * equation[equation.size() - l - 2] * res[i][l];
-          } else if (l == equation.size() - 2) {
-            summand = equation[l] * res[i][0];
-          } else {
-            summand = equation[l];
-          }
-          tempAns[ind][j * offset + 3] += summand;
+      for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
+        double tempDelta{};
+#pragma omp for reduction(+ : tempDelta)
+        for (int16_t k = 0; k < _numberOfSteps; ++k) {
+          tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
         }
-        tempAns[ind][j * offset + 3] /= equation[0];
-        tempAns[ind][j * offset + 4] = tempAns[ind][j * offset + 3] * h;
-      }
-    }
 
- #pragma omp parallel for
-    for (int16_t j = 0; j < resSize - 1; ++j) {
-      for (int16_t k = 0; k < _numberOfSteps - 1; ++k) {
-        auto diminutive = tempAns[ind - k][j * offset + 4 + k];
-        auto deductible = tempAns[ind - 1 - k][j * offset + 4 + k];
-        tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
+        tempAns[ind - 1][j * offset + 2] = tempDelta;
+        tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
+        newStrInAns.push_back(tempAns[ind][j * offset + 1]);
       }
-    }
 
-    tempAns.erase(tempAns.begin());
+      res.push_back(newStrInAns);
+      newStrInAns.clear();
+
+#pragma omp for
+      for (int32_t j = 0; j < resSize - 1; ++j) {
+        if (j != resSize - 2) {
+          tempAns[ind][j * offset + 3] = res[i][j + 2];
+          tempAns[ind][j * offset + 4] = res[i][j + 2] * h;
+        } else {
+          for (uint32_t l = 1; l < equation.size(); ++l) {
+            double summand{};
+            if (l < equation.size() - 2) {
+              summand = (-1) * equation[equation.size() - l - 2] * res[i][l];
+            } else if (l == equation.size() - 2) {
+              summand = equation[l] * res[i][0];
+            } else {
+              summand = equation[l];
+            }
+            tempAns[ind][j * offset + 3] += summand;
+          }
+          tempAns[ind][j * offset + 3] /= equation[0];
+          tempAns[ind][j * offset + 4] = tempAns[ind][j * offset + 3] * h;
+        }
+      }
+
+#pragma omp for
+      for (int16_t j = 0; j < resSize - 1; ++j) {
+        for (int16_t k = 0; k < _numberOfSteps - 1; ++k) {
+          auto diminutive = tempAns[ind - k][j * offset + 4 + k];
+          auto deductible = tempAns[ind - 1 - k][j * offset + 4 + k];
+          tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
+        }
+      }
+
+      tempAns.erase(tempAns.begin());
+    }
   }
 }
