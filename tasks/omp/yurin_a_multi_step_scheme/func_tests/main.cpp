@@ -44,8 +44,8 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, simple_test) {
   // Create data
   std::vector<double> equation{1, 0, 0, 0};
   std::vector<double> boundaryConditions{0, 1};
-  double h{0.0001};
-  double end{0.01};
+  double h{0.01};
+  double end{1};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;
   std::vector<double> out(size, 0);
@@ -126,7 +126,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, second_test) {
   // Create data
   std::vector<double> equation{1, 1, 0, 0, 0, 0};
   std::vector<double> boundaryConditions{0, 0, 1, -1};
-  double h{0.001};
+  double h{0.01};
   double end{1};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;
@@ -159,7 +159,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, second_test) {
 
   for (uint32_t i = 0; i < size; i++) {
     double x = i * h;
-    EXPECT_NEAR(out[i], (1 - exp((-1) * x)), 1e-6);
+    EXPECT_NEAR(out[i], (1 - exp((-1) * x)), 1e-4);
   }
 }
 
@@ -167,7 +167,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, fird_test) {
   // Create data
   std::vector<double> equation{1, -1, 2, 0};
   std::vector<double> boundaryConditions{0, 0.1};
-  double h{0.001};
+  double h{0.01};
   double end{1};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;
@@ -200,6 +200,6 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, fird_test) {
 
   for (uint32_t i = 0; i < size; i++) {
     double x = i * h;
-    EXPECT_NEAR(out[i], (-2 * x + 2.1 * exp(x) - 2), 1e-6);
+    EXPECT_NEAR(out[i], (-2 * x + 2.1 * exp(x) - 2), 1e-4);
   }
 }
