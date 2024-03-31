@@ -102,7 +102,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
 
     std::vector<double> deltaSum(equation.size() - 3);
 
-// #pragma omp parallel for
+#pragma omp parallel for
     for (int64_t j = 1; j < tempSize / 2 + 1; ++j) {
       for (int k = 0; k < 4; ++k) {
         if (k != 1 and k != 2) {
