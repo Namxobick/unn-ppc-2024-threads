@@ -196,7 +196,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
       newStrInAns.push_back(tempAns[ind][j * offset + 1]);
     }
-    
+
     res.push_back(newStrInAns);
     newStrInAns.clear();
 
