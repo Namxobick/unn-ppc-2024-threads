@@ -55,6 +55,7 @@ bool MultiStepSchemeOMP::post_processing() {
 }
 
 void MultiStepSchemeOMP::RungeKuttaMethod() {
+  omp_set_num_threads(4);
   int32_t tempSize = 2 * (equation.size() - 3);
   int32_t resSize = res[0].size();
 
@@ -145,6 +146,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
 }
 
 void MultiStepSchemeOMP::AdamsMethod() {
+  omp_set_num_threads(4);
   int32_t resSize = res[0].size();
   std::vector<std::vector<double>> tempAns(4);
   if (end - res[0][0] < 0) {
@@ -158,7 +160,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
-
+#pragma omp parallel for
     for (int32_t j = 0; j < resSize - 1; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -194,10 +196,10 @@ void MultiStepSchemeOMP::AdamsMethod() {
   }
 
   int16_t ind = _numberOfSteps;
-#pragma omp parallel
-  {
-#pragma omp for num_threads(1)
+
   for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
+#pragma omp parallel
+    {
 #pragma omp master
       {
         std::vector<double> newStrInAns;
