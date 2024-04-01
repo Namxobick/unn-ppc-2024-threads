@@ -61,7 +61,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
   // Create data
   std::vector<double> equation{1, 1, 2, 2, 1, 1, 0, 0};
   std::vector<double> boundaryConditions{0, 1, 2, -2, 1, 1};
-  double h{0.0000018};
+  double h{0.000018};
   double end{1};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;

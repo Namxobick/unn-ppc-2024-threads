@@ -194,10 +194,10 @@ void MultiStepSchemeOMP::AdamsMethod() {
   }
 
   int16_t ind = _numberOfSteps;
-
-  for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
 #pragma omp parallel
-    {
+  {
+#pragma omp for num_threads(1)
+  for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
 #pragma omp master
       {
         std::vector<double> newStrInAns;
