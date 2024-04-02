@@ -217,7 +217,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
         res.push_back(newStrInAns);
       }
 #pragma omp barrier
-#pragma omp for
+#pragma omp for nowait
       for (int32_t j = 0; j < resSize - 1; ++j) {
         if (j != resSize - 2) {
           tempAns[ind][j * offset + 3] = res[i][j + 2];
