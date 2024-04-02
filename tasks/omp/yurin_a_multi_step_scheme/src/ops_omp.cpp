@@ -55,84 +55,70 @@ bool MultiStepSchemeOMP::post_processing() {
 }
 
 void MultiStepSchemeOMP::RungeKuttaMethod() {
-  int32_t tempSize = 2 * (equation.size() - 3);
-  int32_t resSize = res[0].size();
+  uint32_t tempSize = 2 * (equation.size() - 3);
 
   for (int16_t i = 0; i < _numberOfSteps - 1; ++i) {
     std::vector<std::vector<double>> tempAns(4);
     tempAns[0] = res[i];
     tempAns[0].resize(tempSize + 1);
-    std::vector<double> temp;
-    std::vector<double> deltaSum;
-#pragma omp parallel
-    {
-#pragma omp for
-      for (int16_t j = 1; j < 4; ++j) {
-        tempAns[j].resize(tempSize + 1);
-        if (j != 3) {
-          tempAns[j][0] = tempAns[0][0] + h / 2;
-        } else {
-          tempAns[j][0] = tempAns[0][0] + h;
-        }
+
+    for (uint32_t j = 1; j < 4; ++j) {
+      tempAns[j].resize(tempSize + 1);
+      if (j != 3) {
+        tempAns[j][0] = tempAns[0][0] + h / 2;
+      } else {
+        tempAns[j][0] = tempAns[0][0] + h;
       }
-
-#pragma omp single
-      {
-        for (uint32_t j = 0; j < 4; ++j) {
-          for (int64_t k = 1; k < tempSize / 2 + 1; ++k) {
-            if (k != tempSize / 2) {
-              tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
-            } else {
-              for (uint32_t l = 1; l < equation.size(); ++l) {
-                double summand{};
-                if (l < equation.size() - 2) {
-                  summand = (-1) * equation[l] * tempAns[j][tempSize / 2 - l + 1];
-                } else if (l == equation.size() - 2) {
-                  summand = equation[l] * tempAns[j][0];
-                } else {
-                  summand = equation[l];
-                }
-                tempAns[j][k + tempSize / 2] += summand;
-              }
-              tempAns[j][k + tempSize / 2] *= h / equation[0];
-            }
-
-            if (j < 2) {
-              tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2] / 2;
-            } else if (j < 3) {
-              tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2];
-            }
-          }
-        }
-        deltaSum.resize(equation.size() - 3);
-      }
-
-#pragma omp for
-      for (int64_t j = 1; j < tempSize / 2 + 1; ++j) {
-        for (int k = 0; k < 4; ++k) {
-          if (k != 1 and k != 2) {
-            deltaSum[j - 1] += tempAns[k][j + tempSize / 2];
-          } else {
-            deltaSum[j - 1] += 2 * tempAns[k][j + tempSize / 2];
-          }
-        }
-        deltaSum[j - 1] /= 6;
-      }
-
-#pragma omp single
-      {
-        temp.resize(res[i].size());
-        temp[0] = res[i][0] + h;
-      }
-
-#pragma omp for
-      for (int32_t j = 1; j < resSize; ++j) {
-        temp[j] = res[i][j] + deltaSum[j - 1];
-      }
-
-#pragma omp single
-      { res.push_back(temp); }
     }
+
+    for (uint32_t j = 0; j < 4; ++j) {
+      for (uint32_t k = 1; k < tempSize / 2 + 1; ++k) {
+        if (k != tempSize / 2) {
+          tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
+        } else {
+          for (uint32_t l = 1; l < equation.size(); ++l) {
+            double summand{};
+            if (l < equation.size() - 2) {
+              summand = (-1) * equation[l] * tempAns[j][tempSize / 2 - l + 1];
+            } else if (l == equation.size() - 2) {
+              summand = equation[l] * tempAns[j][0];
+            } else {
+              summand = equation[l];
+            }
+            tempAns[j][k + tempSize / 2] += summand;
+          }
+          tempAns[j][k + tempSize / 2] *= h / equation[0];
+        }
+
+        if (j < 2) {
+          tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2] / 2;
+        } else if (j < 3) {
+          tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2];
+        }
+      }
+    }
+
+    std::vector<double> deltaSum(equation.size() - 3);
+
+    for (uint32_t j = 1; j < tempSize / 2 + 1; ++j) {
+      for (int k = 0; k < 4; ++k) {
+        if (k != 1 and k != 2) {
+          deltaSum[j - 1] += tempAns[k][j + tempSize / 2];
+        } else {
+          deltaSum[j - 1] += 2 * tempAns[k][j + tempSize / 2];
+        }
+      }
+      deltaSum[j - 1] /= 6;
+    }
+
+    std::vector<double> temp(res[i].size());
+    temp[0] = res[i][0] + h;
+
+    for (uint32_t j = 1; j < res[i].size(); ++j) {
+      temp[j] = res[i][j] + deltaSum[j - 1];
+    }
+
+    res.push_back(temp);
   }
 }
 
