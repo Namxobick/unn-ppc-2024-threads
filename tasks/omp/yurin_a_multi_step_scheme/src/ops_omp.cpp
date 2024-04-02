@@ -229,7 +229,10 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
 
 #pragma omp single
-      { tempAns.erase(tempAns.begin()); }
+      {
+        tempAns.erase(tempAns.begin());
+        std::cout << omp_get_num_threads() << std::endl;
+      }
     }
   }
 }
