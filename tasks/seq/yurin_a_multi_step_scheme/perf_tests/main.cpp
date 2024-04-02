@@ -14,7 +14,7 @@ TEST(Yurin_A_Multi_Step_Scheme_Seq, test_pipeline_run) {
 
   for (uint32_t i = 0; i < inputSize; ++i) {
     equation[i] = cos(i);
-    if (i <= boundaryConditions.size()) boundaryConditions[i] = sin(i);
+    if (i < boundaryConditions.size()) boundaryConditions[i] = sin(i);
   }
 
   double h{0.0000018};
@@ -70,7 +70,7 @@ TEST(Yurin_A_Multi_Step_Scheme_Seq, test_task_run) {
 
   for (uint32_t i = 0; i < inputSize; ++i) {
     equation[i] = cos(i);
-    if (i <= boundaryConditions.size()) boundaryConditions[i] = sin(i);
+    if (i < boundaryConditions.size()) boundaryConditions[i] = sin(i);
   }
 
   double h{0.0000018};

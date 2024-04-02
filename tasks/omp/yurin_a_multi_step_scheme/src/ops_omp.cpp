@@ -131,9 +131,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
       }
 
 #pragma omp single
-      {
-        res.push_back(temp);
-      }
+      { res.push_back(temp); }
     }
   }
 }
@@ -246,9 +244,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
 
 #pragma omp single
-      {
-        tempAns.erase(tempAns.begin());
-      }
+      { tempAns.erase(tempAns.begin()); }
     }
   }
 }
