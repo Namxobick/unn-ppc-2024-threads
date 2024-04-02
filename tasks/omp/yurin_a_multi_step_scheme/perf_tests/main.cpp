@@ -12,17 +12,17 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
   // Create data
   std::vector<double> equation{1, 1, 2, 2, 1, 1, 0, 0};
   std::vector<double> boundaryConditions{0, 1, 2, -2, 1, 1};
-  double h{0.000018};
+  double h{0.00000018};
   double end{1};
 
-  uint32_t size = (end - boundaryConditions[0]) / h + 1;
+  uint32_t size = (end / 50 - boundaryConditions[0]) / h + 1;
   std::vector<double> out(size, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
-
+  h *= 50;
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
@@ -61,17 +61,17 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
   // Create data
   std::vector<double> equation{1, 1, 2, 2, 1, 1, 0, 0};
   std::vector<double> boundaryConditions{0, 1, 2, -2, 1, 1};
-  double h{0.000018};
+  double h{0.00000018};
   double end{1};
 
-  uint32_t size = (end - boundaryConditions[0]) / h + 1;
+  uint32_t size = (end / 50 - boundaryConditions[0]) / h + 1;
   std::vector<double> out(size, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
-
+  h *= 50;
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
