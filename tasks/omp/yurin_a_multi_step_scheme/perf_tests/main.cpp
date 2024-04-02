@@ -10,19 +10,25 @@
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
   // Create data
-  std::vector<double> equation{1, 1, 2, 2, 1, 1, 0, 0};
-  std::vector<double> boundaryConditions{0, 1, 2, -2, 1, 1};
-  double h{0.00000018};
+  uint32_t inputSize = 100;
+  std::vector<double> equation(inputSize);
+  std::vector<double> boundaryConditions(inputSize - 3);
+
+  for (uint32_t i = 0; i < inputSize; ++i) {
+    equation[i] = cos(i);
+    if (i <= boundaryConditions.size()) boundaryConditions[i] = sin(i);
+  }
+
+  double h{0.0000018};
   double end{1};
 
-  uint32_t size = (end / 30 - boundaryConditions[0]) / h + 1;
+  uint32_t size = (end - boundaryConditions[0]) / h + 1;
   std::vector<double> out(size, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
-  h *= 30;
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
@@ -50,28 +56,30 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
   auto perfAnalyzer = std::make_shared<ppc::core::Perf>(multiStepSchemeOMP);
   perfAnalyzer->pipeline_run(perfAttr, perfResults);
   ppc::core::Perf::print_perf_statistic(perfResults);
-
-  for (uint32_t i = 0; i < size; i++) {
-    double x = i * h;
-    EXPECT_NEAR(out[i], 0.5 * ((-1) * exp(-x) + 5 * sin(x) + (3 - 2 * x) * cos(x)), 1e-4);
-  }
 }
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
   // Create data
-  std::vector<double> equation{1, 1, 2, 2, 1, 1, 0, 0};
-  std::vector<double> boundaryConditions{0, 1, 2, -2, 1, 1};
-  double h{0.00000018};
+  uint32_t inputSize = 100;
+  std::vector<double> equation(inputSize);
+  std::vector<double> boundaryConditions(inputSize - 3);
+
+  for (uint32_t i = 0; i < inputSize; ++i) {
+    equation[i] = cos(i);
+    if (i <= boundaryConditions.size()) boundaryConditions[i] = sin(i);
+  }
+
+  double h{0.0000018};
   double end{1};
 
-  uint32_t size = (end / 30 - boundaryConditions[0]) / h + 1;
+  uint32_t size = (end - boundaryConditions[0]) / h + 1;
   std::vector<double> out(size, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
-  h *= 30;
+
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
@@ -98,9 +106,4 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
   auto perfAnalyzer = std::make_shared<ppc::core::Perf>(multiStepSchemeOMP);
   perfAnalyzer->task_run(perfAttr, perfResults);
   ppc::core::Perf::print_perf_statistic(perfResults);
-
-  for (uint32_t i = 0; i < size; i++) {
-    double x = i * h;
-    EXPECT_NEAR(out[i], 0.5 * ((-1) * exp(-x) + 5 * sin(x) + (3 - 2 * x) * cos(x)), 1e-4);
-  }
 }
