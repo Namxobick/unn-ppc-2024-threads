@@ -136,7 +136,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
-#pragma omp parallel for
+// #pragma omp parallel for
     for (int32_t j = 0; j < resSize - 1; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -173,29 +173,27 @@ void MultiStepSchemeOMP::AdamsMethod() {
   int16_t ind = _numberOfSteps;
 
   for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
+    std::vector<double> newStrInAns;
+    tempAns.emplace_back((equation.size() - 3) * offset + 1);
+    tempAns[ind][0] = tempAns[ind - 1][0] + h;
+
+    newStrInAns.reserve(res[0].size());
+    newStrInAns.push_back(tempAns[ind - 1][0] + h);
 #pragma omp parallel
     {
-#pragma omp single
-      {
-        std::vector<double> newStrInAns;
-        tempAns.emplace_back((equation.size() - 3) * offset + 1);
-        tempAns[ind][0] = tempAns[ind - 1][0] + h;
-
-        newStrInAns.reserve(res[0].size());
-        newStrInAns.push_back(tempAns[ind - 1][0] + h);
-        for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
-          double tempDelta{};
-          for (int16_t k = 0; k < _numberOfSteps; ++k) {
-            tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
-          }
-
-          tempAns[ind - 1][j * offset + 2] = tempDelta;
-          tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
-          newStrInAns.push_back(tempAns[ind][j * offset + 1]);
+#pragma omp for nowait
+      for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
+        double tempDelta{};
+        for (int16_t k = 0; k < _numberOfSteps; ++k) {
+          tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
         }
 
-        res.push_back(newStrInAns);
+        tempAns[ind - 1][j * offset + 2] = tempDelta;
+        tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
+        newStrInAns.push_back(tempAns[ind][j * offset + 1]);
       }
+#pragma omp single
+      { res.push_back(newStrInAns); }
 
 #pragma omp for nowait
       for (int32_t j = 0; j < resSize - 1; ++j) {
@@ -229,10 +227,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
 
 #pragma omp single
-      {
-        tempAns.erase(tempAns.begin());
-        std::cout << omp_get_num_threads() << std::endl;
-      }
+      { tempAns.erase(tempAns.begin()); }
     }
   }
 }
