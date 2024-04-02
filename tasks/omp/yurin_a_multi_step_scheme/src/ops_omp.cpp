@@ -136,8 +136,8 @@ void MultiStepSchemeOMP::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
-// #pragma omp parallel for
-    for (int32_t j = 0; j < resSize - 1; ++j) {
+#pragma omp parallel for schedule(static, (resSize - 1) / 4)
+    for (int32_t j = 0; j < resSize; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
           tempAns[ind][j * offset + k + 1] = res[ind][j + 1];
@@ -179,23 +179,20 @@ void MultiStepSchemeOMP::AdamsMethod() {
 
     newStrInAns.reserve(res[0].size());
     newStrInAns.push_back(tempAns[ind - 1][0] + h);
+    for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
+      double tempDelta{};
+      for (int16_t k = 0; k < _numberOfSteps; ++k) {
+        tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
+      }
+
+      tempAns[ind - 1][j * offset + 2] = tempDelta;
+      tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
+      newStrInAns.push_back(tempAns[ind][j * offset + 1]);
+    }
+    res.push_back(newStrInAns);
 #pragma omp parallel
     {
-#pragma omp for nowait
-      for (uint32_t j = 0; j < res[0].size() - 1; ++j) {
-        double tempDelta{};
-        for (int16_t k = 0; k < _numberOfSteps; ++k) {
-          tempDelta += _coefficients[k] * tempAns[ind - k - 1][j * offset + 4 + k];
-        }
-
-        tempAns[ind - 1][j * offset + 2] = tempDelta;
-        tempAns[ind][j * offset + 1] = tempDelta + tempAns[ind - 1][j * offset + 1];
-        newStrInAns.push_back(tempAns[ind][j * offset + 1]);
-      }
-#pragma omp single
-      { res.push_back(newStrInAns); }
-
-#pragma omp for nowait
+#pragma omp for schedule(static, (resSize - 1) / 4) nowait
       for (int32_t j = 0; j < resSize - 1; ++j) {
         if (j != resSize - 2) {
           tempAns[ind][j * offset + 3] = res[i][j + 2];
@@ -217,7 +214,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
         }
       }
 
-#pragma omp for
+#pragma omp for schedule(static, (resSize - 1) / 4)
       for (int32_t j = 0; j < resSize - 1; ++j) {
         for (int32_t k = 0; k < _numberOfSteps - 1; ++k) {
           auto diminutive = tempAns[ind - k][j * offset + 4 + k];
@@ -225,9 +222,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
           tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
         }
       }
-
-#pragma omp single
-      { tempAns.erase(tempAns.begin()); }
     }
+    tempAns.erase(tempAns.begin());
   }
 }
