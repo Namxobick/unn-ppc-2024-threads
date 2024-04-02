@@ -184,7 +184,6 @@ void MultiStepSchemeOMP::AdamsMethod() {
     }
     stepCount++;
   }
-
   int16_t ind = _numberOfSteps;
 
   for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
@@ -235,8 +234,8 @@ void MultiStepSchemeOMP::AdamsMethod() {
       }
 
 #pragma omp for
-      for (int16_t j = 0; j < resSize - 1; ++j) {
-        for (int16_t k = 0; k < _numberOfSteps - 1; ++k) {
+      for (int32_t j = 0; j < resSize - 1; ++j) {
+        for (int32_t k = 0; k < _numberOfSteps - 1; ++k) {
           auto diminutive = tempAns[ind - k][j * offset + 4 + k];
           auto deductible = tempAns[ind - 1 - k][j * offset + 4 + k];
           tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
