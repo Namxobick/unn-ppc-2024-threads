@@ -73,7 +73,7 @@ TEST(Yurin_A_Multi_Step_Scheme_Seq, test_task_run) {
     if (i < boundaryConditions.size()) boundaryConditions[i] = sin(i);
   }
 
-  double h{0.05};
+  double h{0.2};
   double end{1};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;

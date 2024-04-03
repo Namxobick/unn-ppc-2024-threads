@@ -136,7 +136,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
-#pragma omp parallel for schedule(static, (resSize - 1) / 4)
+#pragma omp parallel for
     for (int32_t j = 0; j < resSize; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -192,7 +192,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     res.push_back(newStrInAns);
 #pragma omp parallel
     {
-#pragma omp for schedule(static, (resSize - 1) / 4) nowait
+#pragma omp for nowait
       for (int32_t j = 0; j < resSize - 1; ++j) {
         if (j != resSize - 2) {
           tempAns[ind][j * offset + 3] = res[i][j + 2];
@@ -214,7 +214,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
         }
       }
 
-#pragma omp for schedule(static, (resSize - 1) / 4)
+#pragma omp for
       for (int32_t j = 0; j < resSize - 1; ++j) {
         for (int32_t k = 0; k < _numberOfSteps - 1; ++k) {
           auto diminutive = tempAns[ind - k][j * offset + 4 + k];
