@@ -3,8 +3,8 @@ name: Collect performance statistic
 # on: [push, pull_request]
 
 on:
-  schedule:
-    - cron: '0 12 */2 * *'
+  # schedule:
+  #   - cron: '0 12 */2 * *'
   workflow_dispatch:
 
 jobs:
