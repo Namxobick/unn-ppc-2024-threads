@@ -10,7 +10,7 @@
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
   // Create data
-  uint32_t inputSize = 1000000;
+  uint32_t inputSize = 5000000;
   std::vector<double> equation(inputSize);
   std::vector<double> boundaryConditions(inputSize - 3);
 
@@ -19,7 +19,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
     if (i < boundaryConditions.size()) boundaryConditions[i] = sin(i);
   }
 
-  double h{0.05};
+  double h{0.25};
   double end{1};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;
@@ -60,7 +60,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
   // Create data
-  uint32_t inputSize = 1000000;
+  uint32_t inputSize = 5000000;
   std::vector<double> equation(inputSize);
   std::vector<double> boundaryConditions(inputSize - 3);
 
@@ -69,7 +69,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
     if (i < boundaryConditions.size()) boundaryConditions[i] = sin(i);
   }
 
-  double h{0.05};
+  double h{0.25};
   double end{1};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;
