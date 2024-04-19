@@ -73,7 +73,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     }
 
     for (uint32_t j = 0; j < 4; ++j) {
-#pragma omp parallel for proc_bind(close)
+#pragma omp parallel for
       for (uint32_t k = 1; k < tempSize / 2 + 1; ++k) {
         if (k != tempSize / 2) {
           tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
@@ -100,7 +100,7 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     }
 
     std::vector<double> deltaSum(equation.size() - 3);
-#pragma omp parallel for proc_bind(close)
+#pragma omp parallel for
     for (uint32_t j = 1; j < tempSize / 2 + 1; ++j) {
       double sum = 0;
       for (int k = 0; k < 4; ++k) {
@@ -138,7 +138,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
-#pragma omp parallel for proc_bind(close)
+#pragma omp parallel for
     for (int32_t j = 0; j < resSize - 1; ++j) {
       for (int16_t k = 0; k < stepCount; ++k) {
         if (k == 0) {
@@ -192,7 +192,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
 
     res.push_back(newStrInAns);
     auto resI0 = res[i][0];
-#pragma omp parallel proc_bind(close)
+#pragma omp parallel
     {
 #pragma omp for nowait
       for (int32_t j = 0; j < resSize - 1; ++j) {
