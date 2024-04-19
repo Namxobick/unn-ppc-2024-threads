@@ -2,6 +2,7 @@
 #include "tbb/yurin_a_multi_step_scheme/include/ops_tbb.hpp"
 
 #include <tbb/tbb.h>
+
 #include <thread>
 
 using namespace std::chrono_literals;
@@ -73,7 +74,7 @@ void MultiStepSchemeTBB::RungeKuttaMethod() {
 
     for (uint32_t j = 0; j < 4; ++j) {
 tbb::parallel_for(tbb::blocked_range<size_t>(1, tempSize / 2 + 1),
-        [&](const tbb::blocked_range<size_t>& r) {
+    [&](const tbb::blocked_range<size_t>& r) {
         for (size_t k = r.begin(); k != r.end(); ++k) {
           if (k != tempSize / 2) {
             tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
@@ -97,25 +98,23 @@ tbb::parallel_for(tbb::blocked_range<size_t>(1, tempSize / 2 + 1),
             tempAns[j + 1][k] = tempAns[j][k] + tempAns[j][k + tempSize / 2];
           }
         }
-        });
+      });
     }
 
     std::vector<double> deltaSum(equation.size() - 3);
-    tbb::parallel_for(tbb::blocked_range<size_t>(1, tempSize / 2 + 1),
-                      [&](const tbb::blocked_range<size_t>& r) {
-                        for (size_t j = r.begin(); j != r.end(); ++j) {
-                          double sum = 0;
-                          for (int k = 0; k < 4; ++k) {
-                            if (k != 1 && k != 2) {
-                              sum += tempAns[k][j + tempSize / 2];
-                            } else {
-                              sum += 2 * tempAns[k][j + tempSize / 2];
-                            }
-                          }
-                          deltaSum[j - 1] = sum / 6;
-                        }
-                      }
-    );
+    tbb::parallel_for(tbb::blocked_range<size_t>(1, tempSize / 2 + 1), [&](const tbb::blocked_range<size_t>& r) {
+        for (size_t j = r.begin(); j != r.end(); ++j) {
+            double sum = 0;
+            for (int k = 0; k < 4; ++k) {
+                if (k != 1 && k != 2) {
+                    sum += tempAns[k][j + tempSize / 2];
+                  } else {
+                    sum += 2 * tempAns[k][j + tempSize / 2];
+                  }
+              }
+            deltaSum[j - 1] = sum / 6;
+          }
+      });
 
     std::vector<double> temp(res[i].size());
     temp[0] = res[i][0] + h;
@@ -142,8 +141,7 @@ void MultiStepSchemeTBB::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
-tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1),
-            [&](const tbb::blocked_range<int32_t>& r) {
+    tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1), [&](const tbb::blocked_range<int32_t>& r) {
       for (int32_t j = r.begin(); j != r.end(); ++j) {
         for (int16_t k = 0; k < stepCount; ++k) {
           if (k == 0) {
@@ -172,7 +170,7 @@ tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1),
           }
         }
       }
-          });
+    });
     stepCount++;
   }
 
@@ -198,45 +196,37 @@ tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1),
 
     res.push_back(newStrInAns);
     auto resI0 = res[i][0];
-//#pragma omp parallel proc_bind(close)
-//    {
-//#pragma omp for nowait
     auto equationSize = equation.size();
-    tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1),
-        [&](const tbb::blocked_range<int32_t>& r) {
-                        for (int32_t j = r.begin(); j != r.end(); ++j) {
-                          if (j != resSize - 2) {
-                            auto x = res[i][j + 2];
-                            tempAns[ind][j * offset + 3] = x;
-                            tempAns[ind][j * offset + 4] = x * h;
-                          } else {
-                            double summand = 0;
-                            for (uint32_t l = 1; l < equationSize; ++l) {
-                              if (l < equationSize - 2) {
-                                summand += (-1) * equation[equationSize - l - 2] * res[i][l];
-                              } else if (l == equationSize - 2) {
-                                summand += equation[l] * resI0;
-                              } else {
-                                summand += equation[l];
-                              }
-                            }
-                            tempAns[ind][j * offset + 3] = summand / equation[0];
-                            tempAns[ind][j * offset + 4] = summand / equation[0] * h;
-                          }
-                        }
+    tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1), [&](const tbb::blocked_range<int32_t>& r) {
+        for (int32_t j = r.begin(); j != r.end(); ++j) {
+            if (j != resSize - 2) {
+                auto x = res[i][j + 2];
+                tempAns[ind][j * offset + 3] = x;
+                tempAns[ind][j * offset + 4] = x * h;
+              } else {
+                double summand = 0;
+                for (uint32_t l = 1; l < equationSize; ++l) {
+                    if (l < equationSize - 2) {
+                        summand += (-1) * equation[equationSize - l - 2] * res[i][l];
+                      } else if (l == equationSize - 2) {
+                        summand += equation[l] * resI0;
+                      } else {
+                        summand += equation[l];
                       }
-    );
-
-    tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1),
-                      [&](const tbb::blocked_range<int32_t>& r) {
-                        for (int32_t j = r.begin(); j != r.end(); ++j) {
-                          for (int32_t k = 0; k < _numberOfSteps - 1; ++k) {
-                            tempAns[ind - k - 1][j * offset + 5 + k] =
-                                tempAns[ind - k][j * offset + 4 + k] - tempAns[ind - 1 - k][j * offset + 4 + k];
-                          }
-                        }
-                      }
-    );
+                  }
+                tempAns[ind][j * offset + 3] = summand / equation[0];
+                tempAns[ind][j * offset + 4] = summand / equation[0] * h;
+              }
+          }
+      });
+    tbb::parallel_for(tbb::blocked_range<int32_t>(0, resSize - 1), [&](const tbb::blocked_range<int32_t>& r) {
+        for (int32_t j = r.begin(); j != r.end(); ++j) {
+            for (int32_t k = 0; k < _numberOfSteps - 1; ++k) {
+                tempAns[ind - k - 1][j * offset + 5 + k] =
+                        tempAns[ind - k][j * offset + 4 + k] - tempAns[ind - 1 - k][j * offset + 4 + k];
+              }
+          }
+      });
     tempAns.erase(tempAns.begin());
   }
 }

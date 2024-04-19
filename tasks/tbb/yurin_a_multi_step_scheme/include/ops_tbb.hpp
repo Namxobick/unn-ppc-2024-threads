@@ -29,4 +29,4 @@ class MultiStepSchemeTBB : public ppc::core::Task {
 
   std::vector<std::vector<double>> res{};
 };
-}  // namespace yurin_omp
+}  // namespace yurin_tbb
