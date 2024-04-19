@@ -7,6 +7,7 @@
 #include "core/perf/include/perf.hpp"
 #include "gtest/gtest.h"
 #include "omp/yurin_a_multi_step_scheme/include/ops_omp.hpp"
+using namespace yurin_omp;
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
   // Create data

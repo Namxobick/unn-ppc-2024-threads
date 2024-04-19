@@ -4,6 +4,7 @@
 
 #include "gtest/gtest.h"
 #include "omp/yurin_a_multi_step_scheme/include/ops_omp.hpp"
+using namespace yurin_omp;
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, incorrect_data) {
   // Create data

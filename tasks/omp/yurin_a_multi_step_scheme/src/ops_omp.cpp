@@ -6,6 +6,7 @@
 #include <thread>
 
 using namespace std::chrono_literals;
+using namespace yurin_omp;
 
 bool MultiStepSchemeOMP::pre_processing() {
   internal_order_test();
@@ -218,7 +219,8 @@ void MultiStepSchemeOMP::AdamsMethod() {
 #pragma omp for
       for (int32_t j = 0; j < resSize - 1; ++j) {
         for (int32_t k = 0; k < _numberOfSteps - 1; ++k) {
-          tempAns[ind - k - 1][j * offset + 5 + k] = tempAns[ind - k][j * offset + 4 + k] - tempAns[ind - 1 - k][j * offset + 4 + k];
+          tempAns[ind - k - 1][j * offset + 5 + k] =
+              tempAns[ind - k][j * offset + 4 + k] - tempAns[ind - 1 - k][j * offset + 4 + k];
         }
       }
     }
