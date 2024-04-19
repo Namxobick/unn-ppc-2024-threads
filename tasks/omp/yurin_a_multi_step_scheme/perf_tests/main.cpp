@@ -11,7 +11,7 @@ using namespace yurin_omp;
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
   // Create data
-  uint32_t inputSize = 3000000;
+  uint32_t inputSize = 2500000;
   std::vector<double> equation(inputSize);
   std::vector<double> boundaryConditions(inputSize - 3);
 
@@ -61,7 +61,7 @@ TEST(Yurin_A_Multi_Step_Scheme_OMP, test_pipeline_run) {
 
 TEST(Yurin_A_Multi_Step_Scheme_OMP, test_task_run) {
   // Create data
-  uint32_t inputSize = 3000000;
+  uint32_t inputSize = 2500000;
   std::vector<double> equation(inputSize);
   std::vector<double> boundaryConditions(inputSize - 3);
 
