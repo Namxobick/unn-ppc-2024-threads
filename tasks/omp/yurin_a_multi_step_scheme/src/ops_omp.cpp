@@ -35,7 +35,6 @@ bool MultiStepSchemeOMP::validation() {
 
 bool MultiStepSchemeOMP::run() {
   internal_order_test();
-  omp_set_num_threads(4);
   res.clear();
   res.reserve(static_cast<uint32_t>((end - boundaryConditions[0]) / h) + 2);
   res.push_back(boundaryConditions);
@@ -102,14 +101,15 @@ void MultiStepSchemeOMP::RungeKuttaMethod() {
     std::vector<double> deltaSum(equation.size() - 3);
 #pragma omp parallel for proc_bind(close)
     for (uint32_t j = 1; j < tempSize / 2 + 1; ++j) {
+      double sum = 0;
       for (int k = 0; k < 4; ++k) {
         if (k != 1 and k != 2) {
-          deltaSum[j - 1] += tempAns[k][j + tempSize / 2];
+          sum += tempAns[k][j + tempSize / 2];
         } else {
-          deltaSum[j - 1] += 2 * tempAns[k][j + tempSize / 2];
+          sum += 2 * tempAns[k][j + tempSize / 2];
         }
       }
-      deltaSum[j - 1] /= 6;
+      deltaSum[j - 1] = sum / 6;
     }
 
     std::vector<double> temp(res[i].size());
@@ -144,9 +144,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
           tempAns[ind][j * offset + k + 1] = res[ind][j + 1];
         } else if (k == 1 or k > 3) {
           if (i == 0) continue;
-          auto diminutive = tempAns[ind + 1][j * offset + k];
-          auto deductible = tempAns[ind][j * offset + k];
-          tempAns[ind][j * offset + k + 1] = diminutive - deductible;
+          tempAns[ind][j * offset + k + 1] = tempAns[ind + 1][j * offset + k] - tempAns[ind][j * offset + k];
         } else if (k == 2) {
           if (j != resSize - 2)
             tempAns[ind][j * offset + k + 1] = res[ind][j + 2];
@@ -170,6 +168,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     }
     stepCount++;
   }
+
   int16_t ind = _numberOfSteps;
 
   for (uint32_t i = ind; i < (end - res[0][0]) / h + 1; ++i) {
@@ -191,6 +190,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
     }
 
     res.push_back(newStrInAns);
+    auto resI0 = res[i][0];
 #pragma omp parallel proc_bind(close)
     {
 #pragma omp for nowait
@@ -205,7 +205,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
             if (l < equation.size() - 2) {
               summand += (-1) * equation[equation.size() - l - 2] * res[i][l];
             } else if (l == equation.size() - 2) {
-              summand += equation[l] * res[i][0];
+              summand += equation[l] * resI0;
             } else {
               summand += equation[l];
             }
@@ -218,9 +218,7 @@ void MultiStepSchemeOMP::AdamsMethod() {
 #pragma omp for
       for (int32_t j = 0; j < resSize - 1; ++j) {
         for (int32_t k = 0; k < _numberOfSteps - 1; ++k) {
-          auto diminutive = tempAns[ind - k][j * offset + 4 + k];
-          auto deductible = tempAns[ind - 1 - k][j * offset + 4 + k];
-          tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
+          tempAns[ind - k - 1][j * offset + 5 + k] = tempAns[ind - k][j * offset + 4 + k] - tempAns[ind - 1 - k][j * offset + 4 + k];
         }
       }
     }
