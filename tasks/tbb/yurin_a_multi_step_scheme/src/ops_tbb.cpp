@@ -106,10 +106,10 @@ void MultiStepSchemeTBB::RungeKuttaMethod() {
         double sum = 0;
         for (int k = 0; k < 4; ++k) {
           if (k != 1 && k != 2) {
-              sum += tempAns[k][j + tempSize / 2];
-            } else {
-              sum += 2 * tempAns[k][j + tempSize / 2];
-            }
+            sum += tempAns[k][j + tempSize / 2];
+          } else {
+            sum += 2 * tempAns[k][j + tempSize / 2];
+          }
         }
         deltaSum[j - 1] = sum / 6;
       }
@@ -206,7 +206,7 @@ void MultiStepSchemeTBB::AdamsMethod() {
           double summand = 0;
           for (uint32_t l = 1; l < equationSize; ++l) {
             if (l < equationSize - 2) {
-                summand += (-1) * equation[equationSize - l - 2] * res[i][l];
+              summand += (-1) * equation[equationSize - l - 2] * res[i][l];
             } else if (l == equationSize - 2) {
               summand += equation[l] * resI0;
             } else {
