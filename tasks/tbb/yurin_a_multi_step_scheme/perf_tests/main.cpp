@@ -27,10 +27,13 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, test_pipeline_run) {
   std::vector<double> out(size, 0);
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
+  std::shared_ptr<ppc::core::TaskData> taskDataSeq =
+      std::make_shared<ppc::core::TaskData>();
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&h));
@@ -49,7 +52,9 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, test_pipeline_run) {
   auto perfAttr = std::make_shared<ppc::core::PerfAttr>();
   perfAttr->num_running = 10;
   const auto t0 = oneapi::tbb::tick_count::now();
-  perfAttr->current_timer = [&] { return (oneapi::tbb::tick_count::now() - t0).seconds(); };
+  perfAttr->current_timer = [&] {
+    return (oneapi::tbb::tick_count::now() - t0).seconds();
+  };
 
   // Create and init perf results
   auto perfResults = std::make_shared<ppc::core::PerfResults>();
@@ -78,11 +83,14 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, test_task_run) {
   std::vector<double> out(size, 0);
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
+  std::shared_ptr<ppc::core::TaskData> taskDataSeq =
+      std::make_shared<ppc::core::TaskData>();
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
 
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&h));
@@ -100,7 +108,9 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, test_task_run) {
   auto perfAttr = std::make_shared<ppc::core::PerfAttr>();
   perfAttr->num_running = 10;
   const auto t0 = oneapi::tbb::tick_count::now();
-  perfAttr->current_timer = [&] { return (oneapi::tbb::tick_count::now() - t0).seconds(); };
+  perfAttr->current_timer = [&] {
+    return (oneapi::tbb::tick_count::now() - t0).seconds();
+  };
 
   // Create and init perf results
   auto perfResults = std::make_shared<ppc::core::PerfResults>();

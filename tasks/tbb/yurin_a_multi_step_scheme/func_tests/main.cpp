@@ -13,17 +13,25 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, incorrect_data) {
   double h{0.2};
   double end{1};
 
-  std::vector<double> ans{1, 1.2798, 1.457366035277778, 1.5478079006794228, 1.5907511599041377, 1.5482917405772707};
+  std::vector<double> ans{1,
+                          1.2798,
+                          1.457366035277778,
+                          1.5478079006794228,
+                          1.5907511599041377,
+                          1.5482917405772707};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;
   std::vector<double> out(size, 0);
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
+  std::shared_ptr<ppc::core::TaskData> taskDataSeq =
+      std::make_shared<ppc::core::TaskData>();
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
 
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&h));
@@ -52,11 +60,14 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, simple_test) {
   std::vector<double> out(size, 0);
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
+  std::shared_ptr<ppc::core::TaskData> taskDataSeq =
+      std::make_shared<ppc::core::TaskData>();
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
 
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&h));
@@ -88,17 +99,25 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, first_test) {
   double h{0.2};
   double end{1};
 
-  std::vector<double> ans{1, 1.2798, 1.457366035277778, 1.5478079006794228, 1.5907511599041377, 1.5482917405772707};
+  std::vector<double> ans{1,
+                          1.2798,
+                          1.457366035277778,
+                          1.5478079006794228,
+                          1.5907511599041377,
+                          1.5482917405772707};
 
   uint32_t size = (end - boundaryConditions[0]) / h + 1;
   std::vector<double> out(size, 0);
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
+  std::shared_ptr<ppc::core::TaskData> taskDataSeq =
+      std::make_shared<ppc::core::TaskData>();
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
 
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&h));
@@ -134,11 +153,14 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, second_test) {
   std::vector<double> out(size, 0);
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
+  std::shared_ptr<ppc::core::TaskData> taskDataSeq =
+      std::make_shared<ppc::core::TaskData>();
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
 
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&h));
@@ -175,11 +197,14 @@ TEST(Yurin_A_Multi_Step_Scheme_TBB, fird_test) {
   std::vector<double> out(size, 0);
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(equation.data()));
+  std::shared_ptr<ppc::core::TaskData> taskDataSeq =
+      std::make_shared<ppc::core::TaskData>();
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(equation.data()));
   taskDataSeq->inputs_count.emplace_back(equation.size());
 
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(boundaryConditions.data()));
+  taskDataSeq->inputs.emplace_back(
+      reinterpret_cast<uint8_t *>(boundaryConditions.data()));
   taskDataSeq->inputs_count.emplace_back(boundaryConditions.size());
 
   taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&h));
