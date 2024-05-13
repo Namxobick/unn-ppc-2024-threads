@@ -141,7 +141,7 @@ bool MultiStepSchemeSTL::pre_processing() {
 
   h = reinterpret_cast<double*>(taskData->inputs[2])[0];
   end = reinterpret_cast<double*>(taskData->inputs[3])[0];
-  numThreads = 4;
+  numThreads = 1;
   return true;
 }
 
