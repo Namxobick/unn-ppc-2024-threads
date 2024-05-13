@@ -7,7 +7,7 @@ using namespace std::chrono_literals;
 using namespace yurin_stl;
 
 void CalculateTempAns(uint32_t start, uint32_t end, uint32_t tempSize, uint32_t j, double h,
-                      const std::vector<double>& equation,  std::vector<std::vector<double>>& tempAns) {
+                      const std::vector<double>& equation, std::vector<std::vector<double>>& tempAns) {
   for (int64_t k = start; k < end; ++k) {
     if (k != tempSize / 2) {
       tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
@@ -200,7 +200,7 @@ void MultiStepSchemeSTL::RungeKuttaMethod() {
     for (auto& thread : threads) {
       thread.join();
     }
-    
+
     std::vector<double> temp(res[i].size());
     temp[0] = res[i][0] + h;
 
