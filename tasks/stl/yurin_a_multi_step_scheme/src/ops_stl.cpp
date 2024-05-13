@@ -255,14 +255,17 @@ void MultiStepSchemeSTL::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
+    uint32_t threadsCount = 0;
     for (uint32_t p = 0; p < numThreads; ++p) {
       uint32_t tstart = p * blockSize;
       uint32_t tend = (p == numThreads - 1) ? (resSize - 1) : (tstart + blockSize);
-      threads[p] = std::thread(CalculateTempAnsAdams, tstart, tend, stepCount, ind, offset, h, i, resSize,
+      if (tstart == tend) continue;
+      threads[threadsCount] = std::thread(CalculateTempAnsAdams, tstart, tend, stepCount, ind, offset, h, i, resSize,
                                std::ref(res), std::ref(equation), std::ref(tempAns));
+      threadsCount++;
     }
-    for (auto& thread : threads) {
-      thread.join();
+    for (uint32_t p = 0; p < threadsCount; ++p) {
+      threads[p].join();
     }
     stepCount++;
   }
@@ -289,14 +292,17 @@ void MultiStepSchemeSTL::AdamsMethod() {
     res.push_back(newStrInAns);
     newStrInAns.clear();
 
+    uint32_t threadsCount = 0;
     for (uint32_t p = 0; p < numThreads; ++p) {
       uint32_t tstart = p * blockSize;
       uint32_t tend = (p == numThreads - 1) ? (resSize - 1) : (tstart + blockSize);
-      threads[p] = std::thread(CalculateAdams, tstart, tend, resSize, h, i, ind, offset, _numberOfSteps,
+      if (tstart == tend) continue;
+      threads[threadsCount] = std::thread(CalculateAdams, tstart, tend, resSize, h, i, ind, offset, _numberOfSteps,
                                std::ref(equation), std::ref(res), std::ref(tempAns));
+      threadsCount++;
     }
-    for (auto& thread : threads) {
-      thread.join();
+    for (uint32_t p = 0; p < threadsCount; ++p) {
+      threads[p].join();
     }
 
     tempAns.erase(tempAns.begin());
