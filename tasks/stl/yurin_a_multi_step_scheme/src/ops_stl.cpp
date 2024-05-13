@@ -131,8 +131,6 @@ void CalculateAdams(uint32_t start, uint32_t end, uint32_t resSize, double h, ui
 }
 
 bool MultiStepSchemeSTL::pre_processing() {
-  auto start = std::chrono::high_resolution_clock::now();
-
   internal_order_test();
   // Init value for input and output
   auto* tempEquation = reinterpret_cast<double*>(taskData->inputs[0]);
@@ -145,9 +143,6 @@ bool MultiStepSchemeSTL::pre_processing() {
   end = reinterpret_cast<double*>(taskData->inputs[3])[0];
   numThreads = std::thread::hardware_concurrency();
 
-  auto tend = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> diff = tend - start;
-  std::cout << "pre: " << diff.count() << " секунд" << std::endl;
   return true;
 }
 
@@ -163,18 +158,22 @@ bool MultiStepSchemeSTL::validation() {
 }
 
 bool MultiStepSchemeSTL::run() {
-  auto start = std::chrono::high_resolution_clock::now();
-
   internal_order_test();
   res.clear();
   res.reserve(static_cast<uint32_t>((end - boundaryConditions[0]) / h) + 2);
   res.push_back(boundaryConditions);
+  auto start = std::chrono::high_resolution_clock::now();
   RungeKuttaMethod();
-  AdamsMethod();
-
   auto tend = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> diff = tend - start;
-  std::cout << "run: " << diff.count() << " секунд" << std::endl;
+  std::cout << "RungeKuttaMethod: " << diff.count() << " секунд" << std::endl;
+
+  start = std::chrono::high_resolution_clock::now();
+  AdamsMethod();
+  tend = std::chrono::high_resolution_clock::now();
+  diff = tend - start;
+  std::cout << "AdamsMethod: " << diff.count() << " секунд" << std::endl;
+
   return true;
 }
 
