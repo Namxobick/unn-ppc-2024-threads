@@ -106,7 +106,7 @@ void CalculateAdams(uint32_t start, uint32_t end, uint32_t resSize, double h, ui
   }
 
   for (uint32_t j = start; j < end; ++j) {
-    for (uint32_t k = 0; k < numberOfSteps - 1; ++k) {
+    for (uint16_t k = 0; k < numberOfSteps - 1; ++k) {
       auto diminutive = tempAns[ind - k][j * offset + 4 + k];
       auto deductible = tempAns[ind - 1 - k][j * offset + 4 + k];
       tempAns[ind - k - 1][j * offset + 5 + k] = diminutive - deductible;
@@ -125,7 +125,7 @@ bool MultiStepSchemeSTL::pre_processing() {
 
   h = reinterpret_cast<double*>(taskData->inputs[2])[0];
   end = reinterpret_cast<double*>(taskData->inputs[3])[0];
-  numThreads = std::thread::hardware_concurrency();
+  numThreads = 4;
   return true;
 }
 
@@ -164,6 +164,8 @@ bool MultiStepSchemeSTL::post_processing() {
 void MultiStepSchemeSTL::RungeKuttaMethod() {
   std::vector<std::thread> threads(numThreads);
   uint32_t tempSize = 2 * (equation.size() - 3);
+  const uint32_t blockSize = (tempSize / 2 + 1) / numThreads;
+
   for (uint32_t i = 0; i < _numberOfSteps - 1; ++i) {
     std::vector<std::vector<double>> tempAns(4);
     tempAns[0] = res[i];
@@ -178,7 +180,6 @@ void MultiStepSchemeSTL::RungeKuttaMethod() {
       }
     }
 
-    const uint32_t blockSize = (tempSize / 2 + 1) / numThreads;
     for (uint32_t j = 0; j < 4; ++j) {
       for (uint8_t p = 0; p < numThreads; ++p) {
         uint32_t tstart = p * blockSize + 1;
