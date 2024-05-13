@@ -173,21 +173,17 @@ bool MultiStepSchemeSTL::run() {
   tend = std::chrono::high_resolution_clock::now();
   diff = tend - start;
   std::cout << "AdamsMethod: " << diff.count() << " секунд" << std::endl;
-
   return true;
 }
 
 bool MultiStepSchemeSTL::post_processing() {
-  auto start = std::chrono::high_resolution_clock::now();
   internal_order_test();
   auto* out_ptr = reinterpret_cast<double*>(taskData->outputs[0]);
 
   for (uint32_t i = 0; i < res.size(); ++i) {
     out_ptr[i] = res[i][1];
   }
-  auto tend = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> diff = tend - start;
-  std::cout << "post: " << diff.count() << " секунд" << std::endl;
+
   return true;
 }
 
