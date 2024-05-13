@@ -162,17 +162,8 @@ bool MultiStepSchemeSTL::run() {
   res.clear();
   res.reserve(static_cast<uint32_t>((end - boundaryConditions[0]) / h) + 2);
   res.push_back(boundaryConditions);
-  auto start = std::chrono::high_resolution_clock::now();
   RungeKuttaMethod();
-  auto tend = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> diff = tend - start;
-  std::cout << "RungeKuttaMethod: " << diff.count() << " секунд" << std::endl;
-
-  start = std::chrono::high_resolution_clock::now();
   AdamsMethod();
-  tend = std::chrono::high_resolution_clock::now();
-  diff = tend - start;
-  std::cout << "AdamsMethod: " << diff.count() << " секунд" << std::endl;
   return true;
 }
 
@@ -207,25 +198,29 @@ void MultiStepSchemeSTL::RungeKuttaMethod() {
     }
 
     for (uint32_t j = 0; j < 4; ++j) {
+      uint32_t threadsCount = 0;
       for (uint32_t p = 0; p < numThreads; ++p) {
         uint32_t tstart = p * blockSize + 1;
         uint32_t tend = (p == numThreads - 1) ? (tempSize / 2 + 1) : (tstart + blockSize);
-        threads[p] = std::thread(CalculateTempAns, tstart, tend, tempSize, j, h, std::ref(equation), std::ref(tempAns));
+        if (tstart == tend) continue;
+        threads[threadsCount++] = std::thread(CalculateTempAns, tstart, tend, tempSize, j, h, std::ref(equation), std::ref(tempAns));
       }
-      for (auto& thread : threads) {
-        thread.join();
+      for (uint32_t p = 0; p < threadsCount; ++p) {
+        threads[p].join();
       }
     }
 
     std::vector<double> deltaSum(equation.size() - 3);
 
+    uint32_t threadsCount = 0;
     for (uint32_t p = 0; p < numThreads; ++p) {
       uint32_t tstart = p * blockSize + 1;
       uint32_t tend = (p == numThreads - 1) ? (tempSize / 2 + 1) : (tstart + blockSize);
-      threads[p] = std::thread(CalculateDeltaSum, tstart, tend, tempSize, std::ref(tempAns), std::ref(deltaSum));
+      if (tstart == tend) continue;
+      threads[threadsCount++] = std::thread(CalculateDeltaSum, tstart, tend, tempSize, std::ref(tempAns), std::ref(deltaSum));
     }
-    for (auto& thread : threads) {
-      thread.join();
+    for (uint32_t p = 0; p < threadsCount; ++p) {
+      threads[p].join();
     }
 
     std::vector<double> temp(res[i].size());
@@ -260,9 +255,8 @@ void MultiStepSchemeSTL::AdamsMethod() {
       uint32_t tstart = p * blockSize;
       uint32_t tend = (p == numThreads - 1) ? (resSize - 1) : (tstart + blockSize);
       if (tstart == tend) continue;
-      threads[threadsCount] = std::thread(CalculateTempAnsAdams, tstart, tend, stepCount, ind, offset, h, i, resSize,
+      threads[threadsCount++] = std::thread(CalculateTempAnsAdams, tstart, tend, stepCount, ind, offset, h, i, resSize,
                                std::ref(res), std::ref(equation), std::ref(tempAns));
-      threadsCount++;
     }
     for (uint32_t p = 0; p < threadsCount; ++p) {
       threads[p].join();
@@ -297,9 +291,8 @@ void MultiStepSchemeSTL::AdamsMethod() {
       uint32_t tstart = p * blockSize;
       uint32_t tend = (p == numThreads - 1) ? (resSize - 1) : (tstart + blockSize);
       if (tstart == tend) continue;
-      threads[threadsCount] = std::thread(CalculateAdams, tstart, tend, resSize, h, i, ind, offset, _numberOfSteps,
+      threads[threadsCount++] = std::thread(CalculateAdams, tstart, tend, resSize, h, i, ind, offset, _numberOfSteps,
                                std::ref(equation), std::ref(res), std::ref(tempAns));
-      threadsCount++;
     }
     for (uint32_t p = 0; p < threadsCount; ++p) {
       threads[p].join();
