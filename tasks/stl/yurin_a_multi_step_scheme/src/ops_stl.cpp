@@ -8,6 +8,10 @@ using namespace yurin_stl;
 
 void CalculateTempAns(uint32_t start, uint32_t end, uint32_t tempSize, uint32_t j, double h,
                       const std::vector<double>& equation, std::vector<std::vector<double>>& tempAns) {
+  if (start >= end) {
+    return;
+  }
+
   for (int64_t k = start; k < end; ++k) {
     if (k != tempSize / 2) {
       tempAns[j][k + tempSize / 2] = h * tempAns[j][k + 1];
@@ -35,6 +39,10 @@ void CalculateTempAns(uint32_t start, uint32_t end, uint32_t tempSize, uint32_t 
 
 void CalculateDeltaSum(uint32_t start, uint32_t end, uint32_t tempSize, const std::vector<std::vector<double>>& tempAns,
                        std::vector<double>& deltaSum) {
+  if (start >= end) {
+    return;
+  }
+
   for (uint32_t j = start; j < end; ++j) {
     for (int k = 0; k < 4; ++k) {
       if (k != 1 and k != 2) {
@@ -50,6 +58,10 @@ void CalculateDeltaSum(uint32_t start, uint32_t end, uint32_t tempSize, const st
 void CalculateTempAnsAdams(uint32_t start, uint32_t end, int16_t stepCount, uint32_t ind, uint32_t offset, double h,
                            uint32_t i, uint32_t resSize, const std::vector<std::vector<double>>& res,
                            const std::vector<double>& equation, std::vector<std::vector<double>>& tempAns) {
+  if (start >= end) {
+    return;
+  }
+
   for (uint32_t j = start; j < end; ++j) {
     for (int16_t k = 0; k < stepCount; ++k) {
       if (k == 0) {
@@ -83,6 +95,10 @@ void CalculateTempAnsAdams(uint32_t start, uint32_t end, int16_t stepCount, uint
 void CalculateAdams(uint32_t start, uint32_t end, uint32_t resSize, double h, uint32_t i, uint32_t ind, uint32_t offset,
                     uint16_t numberOfSteps, const std::vector<double>& equation,
                     const std::vector<std::vector<double>> res, std::vector<std::vector<double>>& tempAns) {
+  if (start >= end) {
+    return;
+  }
+
   auto resI0 = res[i][0];
   for (uint32_t j = start; j < end; ++j) {
     if (j != resSize - 2) {
