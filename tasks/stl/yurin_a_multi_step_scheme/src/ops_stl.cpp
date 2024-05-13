@@ -306,6 +306,7 @@ void MultiStepSchemeSTL::AdamsMethod() {
     for (auto& thread : threads) {
       thread.join();
     }
+
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time_point - t0).count();
     std::cout << "FOURTH dur = " << duration * 1e-9 << std::endl;
     tempAns.erase(tempAns.begin());
