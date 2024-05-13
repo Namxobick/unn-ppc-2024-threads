@@ -131,6 +131,8 @@ void CalculateAdams(uint32_t start, uint32_t end, uint32_t resSize, double h, ui
 }
 
 bool MultiStepSchemeSTL::pre_processing() {
+  auto start = std::chrono::high_resolution_clock::now();
+
   internal_order_test();
   // Init value for input and output
   auto* tempEquation = reinterpret_cast<double*>(taskData->inputs[0]);
@@ -142,6 +144,10 @@ bool MultiStepSchemeSTL::pre_processing() {
   h = reinterpret_cast<double*>(taskData->inputs[2])[0];
   end = reinterpret_cast<double*>(taskData->inputs[3])[0];
   numThreads = std::thread::hardware_concurrency();
+
+  auto tend = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> diff = tend - start;
+  std::cout << "pre: " << diff.count() << " секунд" << std::endl;
   return true;
 }
 
@@ -157,6 +163,8 @@ bool MultiStepSchemeSTL::validation() {
 }
 
 bool MultiStepSchemeSTL::run() {
+  auto start = std::chrono::high_resolution_clock::now();
+
   internal_order_test();
   res.clear();
   res.reserve(static_cast<uint32_t>((end - boundaryConditions[0]) / h) + 2);
@@ -164,16 +172,23 @@ bool MultiStepSchemeSTL::run() {
   RungeKuttaMethod();
   AdamsMethod();
 
+  auto tend = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> diff = tend - start;
+  std::cout << "run: " << diff.count() << " секунд" << std::endl;
   return true;
 }
 
 bool MultiStepSchemeSTL::post_processing() {
+  auto start = std::chrono::high_resolution_clock::now();
   internal_order_test();
   auto* out_ptr = reinterpret_cast<double*>(taskData->outputs[0]);
 
   for (uint32_t i = 0; i < res.size(); ++i) {
     out_ptr[i] = res[i][1];
   }
+  auto tend = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> diff = tend - start;
+  std::cout << "post: " << diff.count() << " секунд" << std::endl;
   return true;
 }
 
@@ -197,8 +212,6 @@ void MultiStepSchemeSTL::RungeKuttaMethod() {
     }
 
     for (uint32_t j = 0; j < 4; ++j) {
-      const auto t0 = std::chrono::high_resolution_clock::now();
-      auto current_time_point = std::chrono::high_resolution_clock::now();
       for (uint32_t p = 0; p < numThreads; ++p) {
         uint32_t tstart = p * blockSize + 1;
         uint32_t tend = (p == numThreads - 1) ? (tempSize / 2 + 1) : (tstart + blockSize);
@@ -207,14 +220,10 @@ void MultiStepSchemeSTL::RungeKuttaMethod() {
       for (auto& thread : threads) {
         thread.join();
       }
-      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time_point - t0).count();
-      std::cout << "FIRST dur = " << duration * 1e-9 << std::endl;
     }
 
     std::vector<double> deltaSum(equation.size() - 3);
 
-    const auto t0 = std::chrono::high_resolution_clock::now();
-    auto current_time_point = std::chrono::high_resolution_clock::now();
     for (uint32_t p = 0; p < numThreads; ++p) {
       uint32_t tstart = p * blockSize + 1;
       uint32_t tend = (p == numThreads - 1) ? (tempSize / 2 + 1) : (tstart + blockSize);
@@ -223,8 +232,6 @@ void MultiStepSchemeSTL::RungeKuttaMethod() {
     for (auto& thread : threads) {
       thread.join();
     }
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time_point - t0).count();
-    std::cout << "SECOND dur = " << duration * 1e-9 << std::endl;
 
     std::vector<double> temp(res[i].size());
     temp[0] = res[i][0] + h;
@@ -253,10 +260,6 @@ void MultiStepSchemeSTL::AdamsMethod() {
     uint32_t ind = _numberOfSteps - i - 1;
     tempAns[ind].resize((equation.size() - 3) * offset + 1);
     tempAns[ind][0] = res[ind][0];
-
-    const auto t0 = std::chrono::high_resolution_clock::now();
-    auto current_time_point = std::chrono::high_resolution_clock::now();
-
     for (uint32_t p = 0; p < numThreads; ++p) {
       uint32_t tstart = p * blockSize;
       uint32_t tend = (p == numThreads - 1) ? (resSize - 1) : (tstart + blockSize);
@@ -266,9 +269,6 @@ void MultiStepSchemeSTL::AdamsMethod() {
     for (auto& thread : threads) {
       thread.join();
     }
-
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time_point - t0).count();
-    std::cout << "THIRD dur = " << duration * 1e-9 << std::endl;
     stepCount++;
   }
   uint32_t ind = _numberOfSteps;
@@ -294,9 +294,6 @@ void MultiStepSchemeSTL::AdamsMethod() {
     res.push_back(newStrInAns);
     newStrInAns.clear();
 
-    const auto t0 = std::chrono::high_resolution_clock::now();
-    auto current_time_point = std::chrono::high_resolution_clock::now();
-
     for (uint32_t p = 0; p < numThreads; ++p) {
       uint32_t tstart = p * blockSize;
       uint32_t tend = (p == numThreads - 1) ? (resSize - 1) : (tstart + blockSize);
@@ -307,8 +304,6 @@ void MultiStepSchemeSTL::AdamsMethod() {
       thread.join();
     }
 
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time_point - t0).count();
-    std::cout << "FOURTH dur = " << duration * 1e-9 << std::endl;
     tempAns.erase(tempAns.begin());
   }
 }
